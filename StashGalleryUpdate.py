@@ -4,7 +4,7 @@ from string import punctuation
 
 stash_instance = "http://192.168.1.71:9999"
 
-gallery_query = "query {allGalleries{id title scenes{id} files {path basename}}}"
+gallery_query = 'query {findGalleries(gallery_filter:{is_missing: "studio_id"}, filter:{per_page: -1}) {galleries{id title scenes{id} files {path basename}}}}'
 update_query = "mutation GalleryUpdate($input : GalleryUpdateInput!) {galleryUpdate(input: $input) {id title}}"
 
 scene_query = '''
@@ -73,7 +73,7 @@ def buildInput(scene, galleryid):
 
 if __name__ == "__main__":
     galleries = callGraphQL(gallery_query)
-    for gallery in galleries['data']['allGalleries']:
+    for gallery in galleries['data']['findGalleries']['galleries']:
         if not len(gallery['scenes']):
             result = None
             bare_name = re.search(r'(.*)\.\w{3,4}$', gallery['files'][0]['basename']).group(1)
@@ -89,6 +89,6 @@ if __name__ == "__main__":
                 if len(scene['data']['findScenes']['scenes']):
                     update_data = buildInput(scene, gallery['id'])
                     print(f"Updating Gallery: \"{bare_name}\" with data from scene: \"{scene['data']['findScenes']['scenes'][0]['title']}\"")
-                    result = callGraphQL(update_query, update_data)
+                    # ~ result = callGraphQL(update_query, update_data)
             if not result:
                 print(f"Couldn't find a match for gallery: \"{bare_name}\"")
