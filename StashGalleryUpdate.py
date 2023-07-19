@@ -1,10 +1,11 @@
 import re
 import requests
+import pathlib
 from string import punctuation
 
 stash_instance = "http://192.168.1.71:9999"
 
-gallery_query = 'query {findGalleries(gallery_filter:{is_missing: "studio_id"}, filter:{per_page: -1}) {galleries{id title scenes{id} files {path basename}}}}'
+gallery_query = 'query {findGalleries(gallery_filter:{is_missing: "studio_id"}, filter:{per_page: -1}) {galleries{id title scenes{id} path files {path basename}}}}'
 update_query = "mutation GalleryUpdate($input : GalleryUpdateInput!) {galleryUpdate(input: $input) {id title}}"
 
 scene_query = '''
@@ -76,7 +77,12 @@ if __name__ == "__main__":
     for gallery in galleries['data']['findGalleries']['galleries']:
         if not len(gallery['scenes']):
             result = None
-            bare_name = re.search(r'(.*)\.\w{3,4}$', gallery['files'][0]['basename']).group(1)
+            if len(gallery['files']):
+                bare_name = re.search(r'(.*)\.\w{3,4}$', gallery['files'][0]['basename']).group(1)
+            else:
+                bare_name = pathlib.PurePath(gallery['path'])
+                bare_name = bare_name.name
+
             bare_name = bare_name.strip(punctuation)
             scene = callGraphQL(scene_query.replace("<FILENAME>", bare_name))
             if len(scene['data']['findScenes']['scenes']):
