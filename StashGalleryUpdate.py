@@ -75,7 +75,7 @@ def buildInput(scene, galleryid):
 if __name__ == "__main__":
     galleries = callGraphQL(gallery_query)
     for gallery in galleries['data']['findGalleries']['galleries']:
-        if not len(gallery['scenes']):
+        if not len(gallery['scenes']) and len(gallery['files']):
             result = None
             if len(gallery['files']):
                 bare_name = re.search(r'(.*)\.\w{3,4}$', gallery['files'][0]['basename']).group(1)
